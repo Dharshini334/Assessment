@@ -67,9 +67,9 @@ def upload_json():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
 
-    
+
+
 @app.route('/api/users', methods=['GET'])
 def get_users():
     try:
@@ -120,8 +120,8 @@ def get_users():
         connection.close()
 
         return app.response_class(
-            response=json.dumps({"page": page, "limit": limit, "users": users}, indent=4), 
-            status=200, 
+            response=json.dumps({"page": page, "limit": limit, "users": users}, indent=4),
+            status=200,
             mimetype="application/json"
         )
 
@@ -139,7 +139,7 @@ def create_user():
         required_fields = ["first_name", "last_name", "company_name", "city", "state", "zip", "email", "web", "age"]
         if not all(field in user_data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
-        
+
         connection = get_db_connection()
         cursor = connection.cursor()
 
@@ -217,8 +217,8 @@ def update_user(id):
 
         # Update query
         cursor.execute("""
-            UPDATE employeeDetails 
-            SET first_name = %s, last_name = %s, company_name = %s, city = %s, state = %s, 
+            UPDATE employeeDetails
+            SET first_name = %s, last_name = %s, company_name = %s, city = %s, state = %s,
                 zip = %s, email = %s, web = %s, age = %s
             WHERE id = %s RETURNING id;
         """, (
@@ -296,7 +296,7 @@ def patch_user(id):
         # Generate dynamic query
         update_fields = []
         values = []
-        
+
         for field in user_data:
             if field in ["first_name", "last_name", "company_name", "city", "state", "zip", "email", "web", "age"]:
                 update_fields.append(f"{field} = %s")
