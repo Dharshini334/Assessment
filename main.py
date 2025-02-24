@@ -11,23 +11,22 @@ DB_NAME = "postgres"
 DB_USER = "postgres"
 DB_PASSWORD = "DB123@hpe456"
 
+
 # Establish a connection function
 def get_db_connection():
     return psycopg2.connect(
-        host=DB_HOST,
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD
+        host=DB_HOST, dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD
     )
 
-@app.route('/upload-json', methods=['POST'])
+
+@app.route("/upload-json", methods=["POST"])
 def upload_json():
     try:
         # Check if file is uploaded
-        if 'file' not in request.files:
+        if "file" not in request.files:
             return jsonify({"error": "No file uploaded"}), 400
 
-        file = request.files['file']
+        file = request.files["file"]
         json_data = json.load(file)  # Load JSON file
 
         # Connect to PostgreSQL
@@ -51,8 +50,9 @@ def upload_json():
                 record.get("zip"),
                 record.get("email"),
                 record.get("web"),
-                record.get("age")
-            ) for record in json_data
+                record.get("age"),
+            )
+            for record in json_data
         ]
 
         # Execute bulk insert
@@ -63,21 +63,22 @@ def upload_json():
         cursor.close()
         connection.close()
 
-        return jsonify({"message": f"{len(records)} records inserted successfully!"}), 201
+        return jsonify(
+            {"message": f"{len(records)} records inserted successfully!"}
+        ), 201
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-
-@app.route('/api/users', methods=['GET'])
+@app.route("/api/users", methods=["GET"])
 def get_users():
     try:
         # Get query parameters
-        page = int(request.args.get('page', 1))  # Default page is 1
-        limit = int(request.args.get('limit', 5))  # Default limit is 5
-        search = request.args.get('search', '').strip().lower()  # Search string
-        sort = request.args.get('sort', 'id')  # Default sorting by id
+        page = int(request.args.get("page", 1))  # Default page is 1
+        limit = int(request.args.get("limit", 5))  # Default limit is 5
+        search = request.args.get("search", "").strip().lower()  # Search string
+        sort = request.args.get("sort", "id")  # Default sorting by id
 
         # Define sorting field and order
         sort_order = "ASC"
@@ -86,7 +87,15 @@ def get_users():
             sort = sort[1:]  # Remove "-" for field name
 
         # Ensure the sorting field is valid
-        allowed_sort_fields = ["id", "first_name", "last_name", "age", "email", "city", "state"]
+        allowed_sort_fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "age",
+            "email",
+            "city",
+            "state",
+        ]
         if sort not in allowed_sort_fields:
             return jsonify({"error": "Invalid sort field"}), 400
 
@@ -120,37 +129,56 @@ def get_users():
         connection.close()
 
         return app.response_class(
-            response=json.dumps({"page": page, "limit": limit, "users": users}, indent=4),
+            response=json.dumps(
+                {"page": page, "limit": limit, "users": users}, indent=4
+            ),
             status=200,
-            mimetype="application/json"
+            mimetype="application/json",
         )
-
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-
-@app.route('/api/users',methods=['POST'])
+@app.route("/api/users", methods=["POST"])
 def create_user():
     try:
         user_data = request.get_json()
 
-        required_fields = ["first_name", "last_name", "company_name", "city", "state", "zip", "email", "web", "age"]
+        required_fields = [
+            "first_name",
+            "last_name",
+            "company_name",
+            "city",
+            "state",
+            "zip",
+            "email",
+            "web",
+            "age",
+        ]
         if not all(field in user_data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
 
         connection = get_db_connection()
         cursor = connection.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO employeeDetails (first_name, last_name, company_name, city, state, zip, email, web, age)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;
-            """, (
-                user_data["first_name"], user_data["last_name"], user_data["company_name"],
-                user_data["city"], user_data["state"], user_data["zip"], user_data["email"],
-                user_data["web"], user_data["age"]
-        ))
+            """,
+            (
+                user_data["first_name"],
+                user_data["last_name"],
+                user_data["company_name"],
+                user_data["city"],
+                user_data["state"],
+                user_data["zip"],
+                user_data["email"],
+                user_data["web"],
+                user_data["age"],
+            ),
+        )
 
         connection.commit()
 
@@ -159,19 +187,20 @@ def create_user():
         cursor.close()
         connection.close()
 
-        return jsonify({
-            "message": "Employee created successfully",
-            "id": user_id,
-            "first_name": user_data["first_name"],
-            "last_name": user_data["last_name"],
-            "email": user_data["email"]
-        }), 201
+        return jsonify(
+            {
+                "message": "Employee created successfully",
+                "id": user_id,
+                "first_name": user_data["first_name"],
+                "last_name": user_data["last_name"],
+                "email": user_data["email"],
+            }
+        ), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-
-@app.route('/api/users/<int:id>', methods=['GET'])
+@app.route("/api/users/<int:id>", methods=["GET"])
 def get_user_by_id(id):
     try:
         # Connect to PostgreSQL
@@ -193,21 +222,30 @@ def get_user_by_id(id):
         return app.response_class(
             response=json.dumps(user, indent=4),  # Pretty-printed JSON
             status=200,
-            mimetype="application/json"
+            mimetype="application/json",
         )
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-
-@app.route('/api/users/<int:id>', methods=['PUT'])
+@app.route("/api/users/<int:id>", methods=["PUT"])
 def update_user(id):
     try:
         user_data = request.get_json()
 
         # Validate required fields
-        required_fields = ["first_name", "last_name", "company_name", "city", "state", "zip", "email", "web", "age"]
+        required_fields = [
+            "first_name",
+            "last_name",
+            "company_name",
+            "city",
+            "state",
+            "zip",
+            "email",
+            "web",
+            "age",
+        ]
         if not all(field in user_data for field in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
 
@@ -216,16 +254,26 @@ def update_user(id):
         cursor = connection.cursor()
 
         # Update query
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE employeeDetails
             SET first_name = %s, last_name = %s, company_name = %s, city = %s, state = %s,
                 zip = %s, email = %s, web = %s, age = %s
             WHERE id = %s RETURNING id;
-        """, (
-            user_data["first_name"], user_data["last_name"], user_data["company_name"],
-            user_data["city"], user_data["state"], user_data["zip"], user_data["email"],
-            user_data["web"], user_data["age"], id
-        ))
+        """,
+            (
+                user_data["first_name"],
+                user_data["last_name"],
+                user_data["company_name"],
+                user_data["city"],
+                user_data["state"],
+                user_data["zip"],
+                user_data["email"],
+                user_data["web"],
+                user_data["age"],
+                id,
+            ),
+        )
 
         updated_user = cursor.fetchone()
 
@@ -236,18 +284,19 @@ def update_user(id):
         cursor.close()
         connection.close()
 
-        return jsonify({
-            "message": "User updated successfully",
-            "id": id,
-            "updated_data": user_data
-        }), 200
+        return jsonify(
+            {
+                "message": "User updated successfully",
+                "id": id,
+                "updated_data": user_data,
+            }
+        ), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-
-@app.route('/api/users/<int:id>', methods=['DELETE'])
+@app.route("/api/users/<int:id>", methods=["DELETE"])
 def delete_user(id):
     try:
         # Connect to PostgreSQL
@@ -274,8 +323,7 @@ def delete_user(id):
         return jsonify({"error": str(e)}), 500
 
 
-
-@app.route('/api/users/<int:id>', methods=['PATCH'])
+@app.route("/api/users/<int:id>", methods=["PATCH"])
 def patch_user(id):
     try:
         # Get the request data
@@ -298,7 +346,17 @@ def patch_user(id):
         values = []
 
         for field in user_data:
-            if field in ["first_name", "last_name", "company_name", "city", "state", "zip", "email", "web", "age"]:
+            if field in [
+                "first_name",
+                "last_name",
+                "company_name",
+                "city",
+                "state",
+                "zip",
+                "email",
+                "web",
+                "age",
+            ]:
                 update_fields.append(f"{field} = %s")
                 values.append(user_data[field])
 
@@ -323,8 +381,7 @@ def patch_user(id):
         return jsonify({"error": str(e)}), 500
 
 
-
-@app.route('/api/users/summary', methods=['GET'])
+@app.route("/api/users/summary", methods=["GET"])
 def get_user_summary():
     try:
         # Connect to PostgreSQL
@@ -336,7 +393,9 @@ def get_user_summary():
         total_users = cursor.fetchone()[0]
 
         # Get count of users by city
-        cursor.execute("SELECT city, COUNT(*) FROM employeeDetails GROUP BY city ORDER BY COUNT(*) DESC;")
+        cursor.execute(
+            "SELECT city, COUNT(*) FROM employeeDetails GROUP BY city ORDER BY COUNT(*) DESC;"
+        )
         city_counts = cursor.fetchall()
         city_summary = [{"city": row[0], "count": row[1]} for row in city_counts]
 
@@ -345,20 +404,22 @@ def get_user_summary():
         avg_age = cursor.fetchone()[0]
         avg_age = float(avg_age) if avg_age else None
 
-
         # Close connections
         cursor.close()
         connection.close()
 
         # Return formatted JSON response
         return app.response_class(
-            response=json.dumps({
-                "total_users": total_users,
-                "average_age": round(avg_age, 2) if avg_age else None,
-                "users_by_city": city_summary
-            }, indent=4),  # Formatting with indentation
+            response=json.dumps(
+                {
+                    "total_users": total_users,
+                    "average_age": round(avg_age, 2) if avg_age else None,
+                    "users_by_city": city_summary,
+                },
+                indent=4,
+            ),  # Formatting with indentation
             status=200,
-            mimetype="application/json"
+            mimetype="application/json",
         )
 
     except Exception as e:
