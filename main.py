@@ -63,9 +63,10 @@ def upload_json():
         cursor.close()
         connection.close()
 
-        return jsonify(
-            {"message": f"{len(records)} records inserted successfully!"}
-        ), 201
+        return (
+            jsonify({"message": f"{len(records)} records inserted successfully!"}),
+            201,
+        )
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -187,15 +188,18 @@ def create_user():
         cursor.close()
         connection.close()
 
-        return jsonify(
-            {
-                "message": "Employee created successfully",
-                "id": user_id,
-                "first_name": user_data["first_name"],
-                "last_name": user_data["last_name"],
-                "email": user_data["email"],
-            }
-        ), 201
+        return (
+            jsonify(
+                {
+                    "message": "Employee created successfully",
+                    "id": user_id,
+                    "first_name": user_data["first_name"],
+                    "last_name": user_data["last_name"],
+                    "email": user_data["email"],
+                }
+            ),
+            201,
+        )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -284,13 +288,16 @@ def update_user(id):
         cursor.close()
         connection.close()
 
-        return jsonify(
-            {
-                "message": "User updated successfully",
-                "id": id,
-                "updated_data": user_data,
-            }
-        ), 200
+        return (
+            jsonify(
+                {
+                    "message": "User updated successfully",
+                    "id": id,
+                    "updated_data": user_data,
+                }
+            ),
+            200,
+        )
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
