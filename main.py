@@ -388,7 +388,7 @@ def patch_user(id):
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/api/users/summary", methods=["GET"])
+@app.route("/api/users/summary", methods=["GET"])  # Get function
 def get_user_summary():
     try:
         # Connect to PostgreSQL
